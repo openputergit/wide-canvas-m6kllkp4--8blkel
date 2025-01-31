@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Challenge Tracker</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-600">Health Challenge Tracker</h1>
+        
+        <!-- Input Form -->
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <form id="healthForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date</label>
+                        <input type="date" id="date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                        <input type="number" id="weight" required min="20" max="200" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Steps Count</label>
+                        <input type="number" id="steps" required min="0" max="100000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Water Intake (glasses)</label>
+                        <input type="number" id="water" required min="0" max="20" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                    Add Entry
+                </button>
+            </form>
+        </div>
+
+        <!-- Data Display -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">Health Records</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight (kg)</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Steps</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Water (glasses)</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="healthData" class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let healthRecords = JSON.parse(localStorage.getItem('healthRecords')) || [];
+
+        document.getElementById('healthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newRecord = {
+                id: Date.now(),
+                date: document.getElementById('date').value,
+                weight: parseFloat(document.getElementById('weight').value),
+                steps: parseInt(document.getElementById('steps').value),
+                water: parseInt(document.getElementById('water').value)
+            };
+
+            healthRecords.push(newRecord);
+            localStorage.setItem('healthRecords', JSON.stringify(healthRecords));
+            displayRecords();
+            this.reset();
+        });
+
+        function deleteRecord(id) {
+            healthRecords = healthRecords.filter(record => record.id !== id);
+            localStorage.setItem('healthRecords', JSON.stringify(healthRecords));
+            displayRecords();
+        }
+
+        function displayRecords() {
+            const tbody = document.getElementById('healthData');
+            tbody.innerHTML = '';
+
+            healthRecords.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${new Date(record.date).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${record.weight}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${record.steps}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${record.water}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <button onclick="deleteRecord(${record.id})" class="text-red-600 hover:text-red-900">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Initial display
+        displayRecords();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
